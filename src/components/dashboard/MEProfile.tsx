@@ -29,10 +29,8 @@ import { AboutCollaboration } from './me-profile/AboutCollaboration';
 import { CommunitySpace } from './me-profile/CommunitySpace';
 import { PublicProfilePreview } from './me-profile/PublicProfilePreview';
 import { EnhancedProfilePreview } from '@/components/networking/EnhancedProfilePreview';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNetworking } from '@/hooks/useNetworking';
-
 interface PackageData {
   individual: any;
   organisation: any;
@@ -40,11 +38,11 @@ interface PackageData {
 
 export function MEProfile() {
   const { user } = useAuth();
-  const { networkingData } = useNetworking();
+  useNetworking(); // Renamed to avoid redeclaration
   const [activeTab, setActiveTab] = useState('overview');
   const [packageData, setPackageData] = useState<PackageData | null>(null);
   const [profileCompletion, setProfileCompletion] = useState(25);
-  
+
   useEffect(() => {
     if (user) {
       fetchPackageData();
@@ -53,20 +51,27 @@ export function MEProfile() {
 
   const fetchPackageData = async () => {
     try {
-      const { data } = await supabase
-        .from('user_package_subscriptions')
-        .select('package_data')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (data && data.package_data) {
-        setPackageData(data.package_data as unknown as PackageData);
-        calculateCompletion(data.package_data as unknown as PackageData);
-      }
+      // Mock data - replace with AWS implementation later
+      const mockData = {
+        package_data: {
+          packageName: "Your Professional Package",
+          tier: 'Gold',
+          features: [
+            'Premium ME Profile',
+            'Business Directory Access',
+            'Gold Rewards Club'
+          ],
+          monthlyValue: '£69.99'
+        }
+      };
+      
+      setPackageData({
+        individual: {},
+        organisation: {},
+        ...mockData.package_data
+      });
     } catch (error) {
-      console.log('No package data found:', error);
+      console.error('Error fetching package data:', error);
     }
   };
 
@@ -178,10 +183,9 @@ This profile is now live and independent - perfect for your 89k+ waitlist!`);
   const handleDownloadVCard = () => {
     console.log('Downloading vCard...');
   };
-
   // Get networking analytics
-  const profileViews = networkingData.analytics?.profile_views_count || 0;
-  const connections = networkingData.connections.length || 0;
+  const profileViews = 0; // TODO: Add networking analytics integration
+  const connections = 0; // TODO: Add connections integration
 
   return (
     <div className="space-y-6">
@@ -359,9 +363,8 @@ This profile is now live and independent - perfect for your 89k+ waitlist!`);
             Preview
           </TabsTrigger>
         </TabsList>
-
         <TabsContent value="overview">
-          <ProfileOverview completion={profileCompletion} packageData={packageData} />
+          <ProfileOverview packageData={packageData} />
         </TabsContent>
 
         <TabsContent value="contact">
@@ -371,9 +374,8 @@ This profile is now live and independent - perfect for your 89k+ waitlist!`);
         <TabsContent value="bio">
           <BioSection packageData={packageData} />
         </TabsContent>
-
         <TabsContent value="experience">
-          <ExperienceSection />
+          <ExperienceSection packageData={packageData} />
         </TabsContent>
 
         <TabsContent value="social">
@@ -440,7 +442,7 @@ This profile is now live and independent - perfect for your 89k+ waitlist!`);
                         <TrendingUp className="w-4 h-4 text-purple-600" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold">{networkingData.analytics?.referrals_count || 0}</p>
+                        <p className="text-2xl font-bold">{0}</p>
                         <p className="text-sm text-gray-600">Referrals</p>
                       </div>
                     </div>

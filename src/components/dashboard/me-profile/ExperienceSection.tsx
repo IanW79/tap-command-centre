@@ -15,7 +15,6 @@ import {
   CheckCircle,
   Sparkles
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
 interface PackageData {
@@ -153,7 +152,6 @@ export function ExperienceSection({ packageData }: ExperienceSectionProps) {
   const handleSave = async () => {
     setSaving(true);
     
-    // Skip Supabase - just show success for now
     try {
       // Simulate save success
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -370,8 +368,8 @@ export function ExperienceSection({ packageData }: ExperienceSectionProps) {
                   <label className="text-sm font-medium mb-1 block">Institution</label>
                   <Input 
                     value={edu.institution} 
-                    onChange={(e) => setEducation(education.map(e => 
-                      e.id === edu.id ? {...e, institution: e.target.value} : e
+                    onChange={(e) => setEducation(education.map(item => 
+                      item.id === edu.id ? {...item, institution: e.target.value} : item
                     ))}
                     placeholder="University name" 
                   />
@@ -380,8 +378,8 @@ export function ExperienceSection({ packageData }: ExperienceSectionProps) {
                   <label className="text-sm font-medium mb-1 block">Degree</label>
                   <Input 
                     value={edu.degree} 
-                    onChange={(e) => setEducation(education.map(e => 
-                      e.id === edu.id ? {...e, degree: e.target.value} : e
+                    onChange={(e) => setEducation(education.map(item => 
+                      item.id === edu.id ? {...item, degree: e.target.value} : item
                     ))}
                     placeholder="Degree/Qualification" 
                   />
@@ -391,8 +389,8 @@ export function ExperienceSection({ packageData }: ExperienceSectionProps) {
                 <label className="text-sm font-medium mb-1 block">Year</label>
                 <Input 
                   value={edu.year} 
-                  onChange={(e) => setEducation(education.map(e => 
-                    e.id === edu.id ? {...e, year: e.target.value} : e
+                  onChange={(e) => setEducation(education.map(item => 
+                    item.id === edu.id ? {...item, year: e.target.value} : item
                   ))}
                   placeholder="Graduation year" 
                   className="w-32" 
@@ -402,8 +400,8 @@ export function ExperienceSection({ packageData }: ExperienceSectionProps) {
                 <label className="text-sm font-medium mb-1 block">Description</label>
                 <Textarea 
                   value={edu.description} 
-                  onChange={(e) => setEducation(education.map(e => 
-                    e.id === edu.id ? {...e, description: e.target.value} : e
+                  onChange={(e) => setEducation(education.map(item => 
+                    item.id === edu.id ? {...item, description: e.target.value} : item
                   ))}
                   placeholder="Additional details..." 
                   rows={2} 
