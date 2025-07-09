@@ -3,7 +3,6 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Textarea } from '../components/ui/textarea';
 import { Checkbox } from '../components/ui/checkbox';
 
 import { 
@@ -21,32 +20,6 @@ import {
   Mail,
   Briefcase
 } from 'lucide-react';
-
-import { PricingEngine } from '../components/package-builder/PricingEngine';
-
-// Emergency Date Constructor Override - Fix AWS Lambda timestamp issues
-if (typeof window !== 'undefined') {
-  const OriginalDate = Date;
-  (window as any).Date = function(...args: any[]) {
-    if (args.length === 0) return new OriginalDate();
-    if (args.length === 1) {
-      const arg = args[0];
-      // Handle various timestamp formats from AWS
-      if (typeof arg === 'string' || typeof arg === 'number') {
-        try {
-          return new OriginalDate(arg);
-        } catch (e) {
-          console.warn('Date parsing failed:', arg, e);
-          return new OriginalDate();
-        }
-      }
-    }
-    return new OriginalDate(...args);
-  };
-  (window as any).Date.now = OriginalDate.now;
-  (window as any).Date.parse = OriginalDate.parse;
-  (window as any).Date.UTC = OriginalDate.UTC;
-}
 
 // Types
 export interface IndividualData {
@@ -132,7 +105,7 @@ const PackageBuilder: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [sessionData, setSessionData] = useState<PackageBuilderSession>({
-    sessionId: `session_\${Date.now()}_\${Math.random().toString(36).substr(2, 9)}`,
+    sessionId: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     email: '',
     currentStep: 'landing',
     progress: 0,
@@ -166,7 +139,7 @@ const PackageBuilder: React.FC = () => {
       
       // Save to localStorage as fallback
       try {
-        localStorage.setItem(`pb_session_\${updated.sessionId}`, JSON.stringify(updated));
+        localStorage.setItem(`pb_session_${updated.sessionId}`, JSON.stringify(updated));
       } catch (error) {
         console.warn('Failed to save session to localStorage:', error);
       }
@@ -397,15 +370,11 @@ const PackageBuilder: React.FC = () => {
     };
 
     const prevSection = () => {
-  console.log('⬅️ prevSection called, currentSection:', currentSection);
-  if (currentSection > 0) {
-    const newSection = currentSection - 1;
-    console.log('⬅️ Moving to section:', newSection);
-    setCurrentSection(newSection);
-  } else {
-    console.log('⚠️ Already at first section, cannot go back further');
-  }
-};
+      if (currentSection > 0) {
+        setCurrentSection(prev => prev - 1);
+      }
+    };
+
     const getSectionTitle = () => {
       switch (currentSection) {
         case 0: return "Let's get to know you";
@@ -438,7 +407,7 @@ const PackageBuilder: React.FC = () => {
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
                 className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `\${((currentSection + 1) / 4) * 100}%` }}
+                style={{ width: `${((currentSection + 1) / 4) * 100}%` }}
               ></div>
             </div>
           </div>
@@ -462,7 +431,7 @@ const PackageBuilder: React.FC = () => {
                   {[0, 1, 2, 3].map((step) => (
                     <div
                       key={step}
-                      className={`w-3 h-3 rounded-full \${
+                      className={`w-3 h-3 rounded-full ${
                         step <= currentSection ? 'bg-blue-600' : 'bg-slate-200'
                       }`}
                     />
@@ -747,20 +716,19 @@ const PackageBuilder: React.FC = () => {
           </Card>
         </div>
 
-    <div className="text-center mt-8">
-      <Button
-      variant="outline"
-      onClick={() => currentSection === 0 ? goToStep('landing') : prevSection()}
-      className="px-6 py-3"
-      >
-      <ArrowLeft className="w-4 h-4 mr-2" />
-      {currentSection === 0 ? 'Back to Start' : 'Previous'}
-    </Button>
+        <div className="text-center mt-8">
+          <Button
+            variant="outline"
+            onClick={() => goToStep('individual')}
+            className="px-6 py-3"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Previous
+          </Button>
         </div>
       </div>
     </div>
   );
-};
 
   // Package Generation Component
   const PackageGeneration = () => {
@@ -823,7 +791,7 @@ const PackageBuilder: React.FC = () => {
             </Card>
           ) : generatedPackage ? (
             <Card className="max-w-2xl mx-auto shadow-lg">
-                            <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
+              <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
                 <CardTitle className="text-2xl text-center">
                   🎉 {generatedPackage.packageName}
                 </CardTitle>
@@ -951,12 +919,11 @@ const PackageBuilder: React.FC = () => {
         // Clear session data
         localStorage.removeItem(`pb_session_${sessionData.sessionId}`);
 
-        // Redirect to dashboard with welcome parameters
-       // ✅ REPLACE WITH THIS:
-console.log('✅ Registration complete, profile created successfully');
-alert('🎉 Success! Your ME Profile has been created. You can now access your personalised networking platform.');
-// Stay on current page instead of redirecting
-setRegistering(false);
+        // ✅ REPLACE WITH THIS:
+        console.log('✅ Registration complete, profile created successfully');
+        alert('🎉 Success! Your ME Profile has been created. You can now access your personalised networking platform.');
+        // Stay on current page instead of redirecting
+        setRegistering(false);
 
       } catch (error) {
         console.error('❌ Registration error:', error);
@@ -1035,7 +1002,7 @@ setRegistering(false);
                   <Checkbox
                     id="agreeToTerms"
                     checked={registrationData.agreeToTerms}
-                    onCheckedChange={(checked) => setRegistrationData(prev => ({ ...prev, agreeToTerms: checked }))}
+                    onChange={(e) => setRegistrationData(prev => ({ ...prev, agreeToTerms: e.target.checked }))}
                     disabled={registering}
                     className="mt-1"
                   />
@@ -1089,31 +1056,30 @@ setRegistering(false);
   };
 
   // Main Render Logic
-const renderCurrentStep = () => {
-  console.log('🔍 Current step:', currentStep);
-  
-  switch (currentStep) {
-    case 'individual':
-      return <IndividualJourney />;
-    case 'organisation':
-      return <OrganisationSelection />;
-    case 'package-generation':
-      return <PackageGeneration />;
-    case 'registration':
-      return <Registration />;
-    case 'landing':
-    default:
-      return <LandingPage />;
-  }
+  const renderCurrentStep = () => {
+    console.log('🔍 Current step:', currentStep);
+    
+    switch (currentStep) {
+      case 'individual':
+        return <IndividualJourney />;
+      case 'organisation':
+        return <OrganisationSelection />;
+      case 'package-generation':
+        return <PackageGeneration />;
+      case 'registration':
+        return <Registration />;
+      case 'landing':
+      default:
+        return <LandingPage />;
+    }
+  };
+
+  // Main return statement
+  return (
+    <div>
+      {renderCurrentStep()}
+    </div>
+  );
 };
 
-// Main return statement
-return (
-  <div>
-    {renderCurrentStep()}
-  </div>
-);
-
-
-export default PackageBuilder;
-
+export default PackageBuilder; 
